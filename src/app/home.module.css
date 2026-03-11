@@ -1,0 +1,137 @@
+.hero {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.heroContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rem 1.5rem;
+  gap: 3rem;
+}
+
+.heroText {
+  flex: 1;
+  max-width: 600px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.heroHighlight {
+  color: #bfdbfe;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  color: #bfdbfe;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.heroActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.heroIllustration {
+  flex: 0 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.illustrationCard {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.illustrationLine {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+.features {
+  background: white;
+  padding: 3rem 0;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.featureCard {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.featureIcon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.featureCard h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.featureCard p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .heroIllustration {
+    display: none;
+  }
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+  .heroContent {
+    padding: 2.5rem 1.5rem;
+  }
+}
