@@ -1,0 +1,117 @@
+null) {
+        post.excerpt =
+          content.trim().substring(0, 160) +
+          (content.trim().length > 160 ? "..." : "");
+      }
+    }
+    if (author !== undefined) post.author = author.trim();
+    if (excerpt !== undefined && excerpt !== null) post.excerpt = excerpt.trim();
+    if (featuredImage !== undefined)
+      post.featuredImage = featuredImage?.trim() || null;
+
+    await postRepo.save(post);
+    return NextResponse.json({ data: post });
+  } catch (error) {
+    console.error("PUT /api/posts/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to update post" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  context: RouteContext
+) {
+  try {
+    const id = parseInt(context.params.id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
+
+    const dataSource = await getDataSource();
+    const postRepo = dataSource.getRepository(Post);
+    const post = await postRepo.findOne({ where: { id } });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    await postRepo.remove(post);
+    return NextResponse.json({ message: "Post deleted successfully" });
+  } catch (error) {
+    console.error("DELETE /api/posts/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete post" },
+      { status: 500 }
+    );
+  }
+}
+</file>
+
+<file path="Dockerfile">
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat python3 make g++
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install --frozen-lockfile || npm install
+
+# Rebuild the source code only when needed
+FROM base AS builder
+RUN apk add --no-cache libc6-compat python3 make g++
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Create data directory for SQLite
+RUN mkdir -p ./data
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Create data directory for SQLite database
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+
+COPY --from=builder /app/public ./public
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy better-sqlite3 native bindings
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/bindings ./node_modules/bindings
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/file-uri-to-path ./node_modules/file-uri-to-path
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prebuild-install ./node_modules/prebuild-install
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV DATABASE_PATH="/app/data/blog.sqlite"
+
+CMD ["node", "server.js"]
